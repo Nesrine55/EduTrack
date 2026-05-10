@@ -1,0 +1,140 @@
+@model PerformanceEtudiante.ViewModels.ModifierProfilViewModel
+@{
+    ViewData["Title"] = "Mon Profil";
+}
+
+<div class="px-3">
+    <div class="d-flex align-items-center mb-4">
+        <div class="me-3">
+            <div style="width:50px;height:50px;background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-user-edit text-white fa-lg"></i>
+            </div>
+        </div>
+        <div>
+            <h2 class="mb-0 fw-bold">Mon Profil</h2>
+            <p class="text-muted mb-0">Modifier vos informations personnelles (US3)</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Photo de profil -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4">
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(Model.PhotoProfilActuelle))
+                    {
+                        <img src="~/uploads/profils/@Model.PhotoProfilActuelle" class="rounded-circle" width="120" height="120" style="object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div style="width:120px;height:120px;background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                            <i class="fas fa-user fa-3x text-white"></i>
+                        </div>
+                    }
+                </div>
+                <h6 class="fw-bold">@User.Identity?.Name</h6>
+                @foreach (var role in new[] { "Administrateur", "Enseignant", "Etudiant" })
+                {
+                    if (User.IsInRole(role))
+                    {
+                        <span class="badge bg-primary">@role</span>
+                        break;
+                    }
+                }
+                <p class="text-muted small mt-2">Modifiez votre photo via le formulaire</p>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="col-md-9">
+            <form asp-action="Index" asp-controller="Profile" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+
+                <!-- Informations personnelles -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-semibold"><i class="fas fa-id-card me-2 text-primary"></i>Informations personnelles</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Prenom" class="form-label fw-semibold"></label>
+                                <input asp-for="Prenom" class="form-control" placeholder="Votre prénom" />
+                                <span asp-validation-for="Prenom" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Nom" class="form-label fw-semibold"></label>
+                                <input asp-for="Nom" class="form-control" placeholder="Votre nom" />
+                                <span asp-validation-for="Nom" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Telephone" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone text-muted"></i></span>
+                                    <input asp-for="Telephone" class="form-control" placeholder="+216 XX XXX XXX" />
+                                </div>
+                                <span asp-validation-for="Telephone" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DateNaissance" class="form-label fw-semibold"></label>
+                                <input asp-for="DateNaissance" class="form-control" type="date" />
+                                <span asp-validation-for="DateNaissance" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Adresse" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt text-muted"></i></span>
+                                    <input asp-for="Adresse" class="form-control" placeholder="Votre adresse" />
+                                </div>
+                                <span asp-validation-for="Adresse" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="PhotoProfil" class="form-label fw-semibold"></label>
+                                <input asp-for="PhotoProfil" class="form-control" type="file" accept="image/*" />
+                                <span asp-validation-for="PhotoProfil" class="text-danger small"></span>
+                                <p class="text-muted small mt-1">Formats acceptés : JPG, PNG, GIF</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Changement de mot de passe -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-semibold"><i class="fas fa-lock me-2 text-warning"></i>Changer le mot de passe <small class="text-muted fw-normal">(optionnel)</small></h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="MotDePasseActuel" class="form-label fw-semibold"></label>
+                                <input asp-for="MotDePasseActuel" class="form-control" placeholder="••••••••" />
+                                <span asp-validation-for="MotDePasseActuel" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="NouveauMotDePasse" class="form-label fw-semibold"></label>
+                                <input asp-for="NouveauMotDePasse" class="form-control" placeholder="••••••••" />
+                                <span asp-validation-for="NouveauMotDePasse" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ConfirmerMotDePasse" class="form-label fw-semibold"></label>
+                                <input asp-for="ConfirmerMotDePasse" class="form-control" placeholder="••••••••" />
+                                <span asp-validation-for="ConfirmerMotDePasse" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary px-4">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

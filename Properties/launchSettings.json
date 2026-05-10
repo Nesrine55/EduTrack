@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "PerformanceEtudiante": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:56101;http://localhost:56102"
+    }
+  }
+}

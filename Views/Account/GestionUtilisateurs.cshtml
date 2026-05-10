@@ -1,0 +1,206 @@
+@model PerformanceEtudiante.ViewModels.ListeUtilisateursViewModel
+@{
+    ViewData["Title"] = "Gestion des Utilisateurs";
+}
+
+<div class="px-3">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <div class="me-3" style="width:50px;height:50px;background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-users-cog text-white fa-lg"></i>
+            </div>
+            <div>
+                <h2 class="mb-0 fw-bold">Gestion des Utilisateurs</h2>
+                <p class="text-muted mb-0 small">Créer, modifier et attribuer les rôles (US2)</p>
+            </div>
+        </div>
+        <a asp-action="CreerUtilisateur" class="btn btn-primary px-4">
+            <i class="fas fa-user-plus me-2"></i>Créer un utilisateur
+        </a>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row g-3 mb-4">
+        @{
+            var total       = Model.Utilisateurs.Count;
+            var admins      = Model.Utilisateurs.Count(u => u.RoleActuel == "Administrateur");
+            var enseignants = Model.Utilisateurs.Count(u => u.RoleActuel == "Enseignant");
+            var etudiants   = Model.Utilisateurs.Count(u => u.RoleActuel == "Etudiant");
+        }
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <i class="fas fa-users fa-2x text-primary mb-1"></i>
+                <h3 class="fw-bold mb-0">@total</h3>
+                <p class="text-muted small mb-0">Total</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <i class="fas fa-user-shield fa-2x text-danger mb-1"></i>
+                <h3 class="fw-bold mb-0">@admins</h3>
+                <p class="text-muted small mb-0">Admins</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <i class="fas fa-chalkboard-teacher fa-2x text-success mb-1"></i>
+                <h3 class="fw-bold mb-0">@enseignants</h3>
+                <p class="text-muted small mb-0">Enseignants</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <i class="fas fa-user-graduate fa-2x text-info mb-1"></i>
+                <h3 class="fw-bold mb-0">@etudiants</h3>
+                <p class="text-muted small mb-0">Étudiants</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-3">
+            <form asp-action="GestionUtilisateurs" method="get" class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold text-muted">Recherche</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="recherche" class="form-control" placeholder="Nom, prénom ou email…" value="@ViewBag.Recherche" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Filtrer par rôle</label>
+                    <select name="filtreRole" class="form-select">
+                        <option value="">Tous les rôles</option>
+                        @foreach (var role in Model.RolesDisponibles)
+                        {
+                            <option value="@role" selected="@(ViewBag.FiltreRole == role)">@role</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Filtrer</button>
+                </div>
+                <div class="col-md-2">
+                    <a asp-action="GestionUtilisateurs" class="btn btn-outline-secondary w-100"><i class="fas fa-times me-1"></i>Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Utilisateurs.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucun utilisateur trouvé.</p>
+                    <a asp-action="CreerUtilisateur" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i>Créer le premier utilisateur
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Rôle actuel</th>
+                                <th>Statut</th>
+                                <th>Attribuer un rôle</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.Utilisateurs)
+                            {
+                                <tr class="@(user.EstActif ? "" : "opacity-50")">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width:38px;height:38px;background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;flex-shrink:0;">
+                                                @user.Prenom.Substring(0,1).ToUpper()
+                                            </div>
+                                            <span class="fw-semibold">@user.Prenom @user.Nom</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted small">@user.Email</td>
+                                    <td>
+                                        @{
+                                            var (bc, ic) = user.RoleActuel switch {
+                                                "Administrateur" => ("danger",  "user-shield"),
+                                                "Enseignant"     => ("success", "chalkboard-teacher"),
+                                                _                => ("primary", "user-graduate")
+                                            };
+                                        }
+                                        <span class="badge bg-@bc bg-opacity-10 text-@bc border border-@bc">
+                                            <i class="fas fa-@ic me-1"></i>@user.RoleActuel
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (user.EstActif)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                                                <i class="fas fa-check-circle me-1"></i>Actif
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
+                                                <i class="fas fa-times-circle me-1"></i>Inactif
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="ModifierRole" method="post" class="d-flex gap-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <select name="nouveauRole" class="form-select form-select-sm" style="width:145px;">
+                                                @foreach (var role in Model.RolesDisponibles)
+                                                {
+                                                    <option value="@role" selected="@(role == user.RoleActuel)">@role</option>
+                                                }
+                                            </select>
+                                            <button type="submit" class="btn btn-outline-primary btn-sm" title="Attribuer">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a asp-action="ModifierUtilisateur" asp-route-id="@user.Id"
+                                               class="btn btn-sm btn-outline-secondary" title="Modifier le profil">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form asp-action="ToggleActif" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" title="@(user.EstActif ? "Désactiver" : "Activer")"
+                                                        class="btn btn-sm @(user.EstActif ? "btn-outline-warning" : "btn-outline-success")"
+                                                        onclick="return confirm('@(user.EstActif ? "Désactiver" : "Activer") ce compte ?')">
+                                                    <i class="fas fa-@(user.EstActif ? "ban" : "check")"></i>
+                                                </button>
+                                            </form>
+                                            <form asp-action="SupprimerUtilisateur" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                                        onclick="return confirm('Supprimer définitivement @user.Prenom @user.Nom ?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,161 @@
+@model PerformanceEtudiante.ViewModels.DetailUtilisateurViewModel
+@{
+    ViewData["Title"] = "Modifier l'utilisateur";
+    var roles = ViewBag.RolesDisponibles as List<string> ?? new List<string> { "Administrateur", "Enseignant", "Etudiant" };
+}
+
+<div class="px-3">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <div class="me-3" style="width:50px;height:50px;background:linear-gradient(135deg,#ff9800,#e65100);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-user-edit text-white fa-lg"></i>
+        </div>
+        <div>
+            <h2 class="mb-0 fw-bold">Modifier le profil</h2>
+            <p class="text-muted mb-0 small">
+                <a asp-action="GestionUtilisateurs" class="text-muted text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Carte identité -->
+            <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#fff8e1,#fffde7);">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div style="width:55px;height:55px;background:linear-gradient(135deg,#ff9800,#e65100);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:22px;flex-shrink:0;">
+                        @Model.Prenom.Substring(0,1).ToUpper()
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">@Model.Prenom @Model.Nom</h5>
+                        <p class="text-muted mb-0 small">
+                            <i class="fas fa-envelope me-1"></i>@Model.Email
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-calendar me-1"></i>Inscrit le @Model.DateInscription.ToString("dd/MM/yyyy")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="ModifierUtilisateur" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Email" />
+                <input type="hidden" asp-for="DateInscription" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+
+                <!-- Informations personnelles -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-semibold"><i class="fas fa-id-card me-2 text-primary"></i>Informations personnelles</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Prenom" class="form-label fw-semibold">Prénom</label>
+                                <input asp-for="Prenom" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Nom" class="form-label fw-semibold">Nom</label>
+                                <input asp-for="Nom" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Telephone" class="form-label fw-semibold">Téléphone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone text-muted"></i></span>
+                                    <input asp-for="Telephone" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DateNaissance" class="form-label fw-semibold">Date de naissance</label>
+                                <input asp-for="DateNaissance" class="form-control" type="date" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rôle -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-semibold"><i class="fas fa-user-tag me-2 text-warning"></i>Rôle attribué</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach (var role in roles)
+                            {
+                                var (icon, color, desc) = role switch {
+                                    "Administrateur" => ("user-shield",          "danger",  "Accès complet"),
+                                    "Enseignant"     => ("chalkboard-teacher",   "success", "Saisie des notes"),
+                                    _                => ("user-graduate",         "primary", "Consultation")
+                                };
+                                <div class="col-md-4">
+                                    <div class="form-check role-card border rounded-3 p-3 h-100" style="cursor:pointer;">
+                                        <input class="form-check-input" type="radio" asp-for="RoleActuel"
+                                               id="role_@role" value="@role"
+                                               checked="@(Model.RoleActuel == role)" />
+                                        <label class="form-check-label w-100" for="role_@role" style="cursor:pointer;">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <i class="fas fa-@icon text-@color me-2"></i>
+                                                <span class="fw-semibold">@role</span>
+                                            </div>
+                                            <p class="text-muted small mb-0">@desc</p>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statut du compte -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-semibold"><i class="fas fa-toggle-on me-2 text-secondary"></i>Statut du compte</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch fs-5">
+                            <input asp-for="EstActif" class="form-check-input" role="switch" id="estActifSwitch" />
+                            <label class="form-check-label" for="estActifSwitch" id="actifLabel">
+                                @(Model.EstActif ? "Compte actif" : "Compte inactif")
+                            </label>
+                        </div>
+                        <p class="text-muted small mt-1">Un compte inactif ne peut pas se connecter.</p>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning px-5 text-white">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                    <a asp-action="GestionUtilisateurs" class="btn btn-outline-secondary px-4">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// Highlight role cards
+document.querySelectorAll('.role-card input[type=radio]').forEach(radio => {
+    const highlight = () => {
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('border-primary', 'bg-light'));
+        if (radio.checked) radio.closest('.role-card').classList.add('border-primary', 'bg-light');
+    };
+    radio.addEventListener('change', highlight);
+    if (radio.checked) highlight();
+});
+
+// Update label for switch
+document.getElementById('estActifSwitch').addEventListener('change', function () {
+    document.getElementById('actifLabel').textContent = this.checked ? 'Compte actif' : 'Compte inactif';
+});
+</script>
+}

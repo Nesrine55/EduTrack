@@ -1,0 +1,144 @@
+@model PerformanceEtudiante.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Connexion";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion - PerformanceÉtudiante</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .card-login {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .brand-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .btn-login:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 0.25rem rgba(26,115,232,0.25);
+        }
+        .input-group-text {
+            background: #f8f9fa;
+            border-right: none;
+        }
+        .form-control { border-left: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card card-login p-4">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="brand-icon">
+                                <i class="fas fa-graduation-cap fa-2x text-white"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark">PerformanceÉtudiante</h4>
+                            <p class="text-muted small">Connectez-vous à votre espace</p>
+                        </div>
+
+                        <form asp-action="Login" asp-controller="Account" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-1 text-primary"></i>@Html.DisplayNameFor(m => m.Email)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-at text-muted"></i></span>
+                                    <input asp-for="Email" class="form-control" placeholder="votre@email.com" autocomplete="email" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="MotDePasse" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-1 text-primary"></i>@Html.DisplayNameFor(m => m.MotDePasse)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
+                                    <input asp-for="MotDePasse" class="form-control" placeholder="••••••••" id="passwordInput" />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="MotDePasse" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4 form-check">
+                                <input asp-for="SeRappelerDeMoi" class="form-check-input" />
+                                <label asp-for="SeRappelerDeMoi" class="form-check-label small">
+                                    @Html.DisplayNameFor(m => m.SeRappelerDeMoi)
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-login w-100 text-white rounded-pill">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </button>
+                        </form>
+
+                        <div class="mt-4 p-3 bg-light rounded small">
+                            <p class="mb-1 fw-semibold text-muted">Comptes de test :</p>
+                            <p class="mb-0"><i class="fas fa-user-shield text-danger me-1"></i><strong>Admin :</strong> admin&#64;performance.tn / Admin@123456</p>
+                            <p class="mb-0"><i class="fas fa-user-graduate text-primary me-1"></i><strong>Étudiant :</strong> etudiant&#64;performance.tn / Etudiant@123456</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>
