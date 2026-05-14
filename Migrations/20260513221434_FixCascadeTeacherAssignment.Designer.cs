@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerformanceEtudiante.Data;
 
@@ -11,9 +12,11 @@ using PerformanceEtudiante.Data;
 namespace PerformanceEtudiante.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513221434_FixCascadeTeacherAssignment")]
+    partial class FixCascadeTeacherAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,19 +275,7 @@ namespace PerformanceEtudiante.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Classe", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Nom = "Seconde A"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Nom = "Première B"
-                        });
+                    b.ToTable("Classe");
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Groupe", b =>
@@ -306,27 +297,7 @@ namespace PerformanceEtudiante.Migrations
 
                     b.HasIndex("ClasseId");
 
-                    b.ToTable("Groupe", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClasseId = 1,
-                            Nom = "Groupe 1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClasseId = 1,
-                            Nom = "Groupe 2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClasseId = 2,
-                            Nom = "Groupe 1"
-                        });
+                    b.ToTable("Groupe");
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Matiere", b =>
@@ -348,26 +319,6 @@ namespace PerformanceEtudiante.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Matieres");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Coefficient = 0,
-                            Nom = "Mathématiques"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Coefficient = 0,
-                            Nom = "Physique"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Coefficient = 0,
-                            Nom = "Informatique"
-                        });
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Note", b =>
@@ -443,7 +394,7 @@ namespace PerformanceEtudiante.Migrations
 
                     b.HasIndex("MatiereId");
 
-                    b.ToTable("TeacherAssignment", (string)null);
+                    b.ToTable("TeacherAssignment");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -502,7 +453,7 @@ namespace PerformanceEtudiante.Migrations
                     b.HasOne("PerformanceEtudiante.Models.Groupe", "Groupe")
                         .WithMany("Etudiants")
                         .HasForeignKey("GroupeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Groupe");
                 });

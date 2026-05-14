@@ -1,0 +1,35 @@
+﻿@model TeacherAssignmentViewModel
+@{
+    ViewData["Title"] = "Nouvelle affectation enseignant";
+}
+<h2>Nouvelle affectation</h2>
+<form asp-action="Create" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <div class="col-md-6">
+        <label asp-for="EnseignantId" class="form-label">Enseignant</label>
+        <select asp-for="EnseignantId" class="form-select" asp-items="Model.Enseignants"></select>
+        <span asp-validation-for="EnseignantId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ClasseId" class="form-label">Classe</label>
+        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes"></select>
+        <span asp-validation-for="ClasseId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="GroupeId" class="form-label">Groupe</label>
+        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes"></select>
+        <span asp-validation-for="GroupeId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="MatiereId" class="form-label">Matière</label>
+        <select asp-for="MatiereId" class="form-select" asp-items="Model.Matieres"></select>
+        <span asp-validation-for="MatiereId" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">Affecter</button>
+        <a asp-action="Index" class="btn btn-secondary">Annuler</a>
+    </div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

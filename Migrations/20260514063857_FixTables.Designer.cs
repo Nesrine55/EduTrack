@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerformanceEtudiante.Data;
 
@@ -11,9 +12,11 @@ using PerformanceEtudiante.Data;
 namespace PerformanceEtudiante.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514063857_FixTables")]
+    partial class FixTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -348,26 +351,6 @@ namespace PerformanceEtudiante.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Matieres");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Coefficient = 0,
-                            Nom = "Mathématiques"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Coefficient = 0,
-                            Nom = "Physique"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Coefficient = 0,
-                            Nom = "Informatique"
-                        });
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Note", b =>

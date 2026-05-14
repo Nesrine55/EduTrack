@@ -1,0 +1,51 @@
+﻿@model GradeEntryViewModel
+@{
+    ViewData["Title"] = "Saisie de notes (enseignant)";
+}
+<h2>Saisie de notes</h2>
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+<form asp-action="TeacherEntry" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <div class="col-md-4">
+        <label asp-for="ClasseId" class="form-label">Classe</label>
+        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes" onchange="this.form.submit()">
+            <option value="">Sélectionner</option>
+        </select>
+        <span asp-validation-for="ClasseId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="GroupeId" class="form-label">Groupe</label>
+        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes" onchange="this.form.submit()">
+            <option value="">Sélectionner</option>
+        </select>
+        <span asp-validation-for="GroupeId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="MatiereId" class="form-label">Matière</label>
+        <select asp-for="MatiereId" class="form-select" asp-items="Model.Matieres" onchange="this.form.submit()">
+            <option value="">Sélectionner</option>
+        </select>
+        <span asp-validation-for="MatiereId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StudentId" class="form-label">Étudiant</label>
+        <select asp-for="StudentId" class="form-select" asp-items="Model.Students">
+            <option value="">Sélectionner</option>
+        </select>
+        <span asp-validation-for="StudentId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Valeur" class="form-label">Note</label>
+        <input asp-for="Valeur" class="form-control" type="number" min="0" max="20" step="0.01" />
+        <span asp-validation-for="Valeur" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

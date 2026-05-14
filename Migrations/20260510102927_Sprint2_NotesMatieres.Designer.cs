@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PerformanceEtudiante.Data;
 
@@ -11,9 +12,11 @@ using PerformanceEtudiante.Data;
 namespace PerformanceEtudiante.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510102927_Sprint2_NotesMatieres")]
+    partial class Sprint2_NotesMatieres
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,9 +190,6 @@ namespace PerformanceEtudiante.Migrations
                     b.Property<bool>("EstActif")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("GroupeId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -245,8 +245,6 @@ namespace PerformanceEtudiante.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupeId");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -256,77 +254,6 @@ namespace PerformanceEtudiante.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("Utilisateurs", (string)null);
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.Classe", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nom")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Classe", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Nom = "Seconde A"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Nom = "Première B"
-                        });
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.Groupe", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClasseId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nom")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClasseId");
-
-                    b.ToTable("Groupe", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClasseId = 1,
-                            Nom = "Groupe 1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClasseId = 1,
-                            Nom = "Groupe 2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClasseId = 2,
-                            Nom = "Groupe 1"
-                        });
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Matiere", b =>
@@ -348,26 +275,6 @@ namespace PerformanceEtudiante.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Matieres");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Coefficient = 0,
-                            Nom = "Mathématiques"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Coefficient = 0,
-                            Nom = "Physique"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Coefficient = 0,
-                            Nom = "Informatique"
-                        });
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Note", b =>
@@ -410,40 +317,6 @@ namespace PerformanceEtudiante.Migrations
                     b.HasIndex("MatiereId");
 
                     b.ToTable("Notes");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.TeacherAssignment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClasseId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("EnseignantId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("GroupeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MatiereId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClasseId");
-
-                    b.HasIndex("EnseignantId");
-
-                    b.HasIndex("GroupeId");
-
-                    b.HasIndex("MatiereId");
-
-                    b.ToTable("TeacherAssignment", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -497,27 +370,6 @@ namespace PerformanceEtudiante.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PerformanceEtudiante.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("PerformanceEtudiante.Models.Groupe", "Groupe")
-                        .WithMany("Etudiants")
-                        .HasForeignKey("GroupeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Groupe");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.Groupe", b =>
-                {
-                    b.HasOne("PerformanceEtudiante.Models.Classe", "Classe")
-                        .WithMany("Groupes")
-                        .HasForeignKey("ClasseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Classe");
-                });
-
             modelBuilder.Entity("PerformanceEtudiante.Models.Note", b =>
                 {
                     b.HasOne("PerformanceEtudiante.Models.ApplicationUser", "Enseignant")
@@ -543,56 +395,6 @@ namespace PerformanceEtudiante.Migrations
                     b.Navigation("Etudiant");
 
                     b.Navigation("Matiere");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.TeacherAssignment", b =>
-                {
-                    b.HasOne("PerformanceEtudiante.Models.Classe", "Classe")
-                        .WithMany()
-                        .HasForeignKey("ClasseId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PerformanceEtudiante.Models.ApplicationUser", "Enseignant")
-                        .WithMany("TeacherAssignments")
-                        .HasForeignKey("EnseignantId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PerformanceEtudiante.Models.Groupe", "Groupe")
-                        .WithMany()
-                        .HasForeignKey("GroupeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PerformanceEtudiante.Models.Matiere", "Matiere")
-                        .WithMany()
-                        .HasForeignKey("MatiereId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Classe");
-
-                    b.Navigation("Enseignant");
-
-                    b.Navigation("Groupe");
-
-                    b.Navigation("Matiere");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("TeacherAssignments");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.Classe", b =>
-                {
-                    b.Navigation("Groupes");
-                });
-
-            modelBuilder.Entity("PerformanceEtudiante.Models.Groupe", b =>
-                {
-                    b.Navigation("Etudiants");
                 });
 
             modelBuilder.Entity("PerformanceEtudiante.Models.Matiere", b =>

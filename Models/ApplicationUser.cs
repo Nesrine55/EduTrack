@@ -37,5 +37,13 @@ namespace PerformanceEtudiante.Models
         public bool EstActif { get; set; } = true;
 
         public string NomComplet => $"{Prenom} {Nom}";
+
+        
+        public int? GroupeId { get; set; }
+        public Groupe? Groupe { get; set; }
+
+        // Pour les enseignants
+        public ICollection<TeacherAssignment> TeacherAssignments { get; set; } = new List<TeacherAssignment>();
     }
+
 }

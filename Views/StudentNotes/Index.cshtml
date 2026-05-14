@@ -1,0 +1,93 @@
+﻿@model StudentNotesViewModel
+@{
+    ViewData["Title"] = "Mes notes";
+}
+<h2>Mes notes</h2>
+<div class="row mb-3">
+    <div class="col-md-3">
+        <form method="get">
+            <select name="matiereId" class="form-select" onchange="this.form.submit()">
+                <option value="">Toutes les matières</option>
+                @foreach (var matiere in ViewBag.Matieres)
+                {
+                    <option value="@matiere.Id" selected="@(ViewBag.SelectedMatiere == matiere.Id)">
+                        @matiere.Nom
+                    </option>
+                }
+            </select>
+        </form>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card text-bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Moyenne générale</h5>
+                <p class="card-text fs-2">@Model.Moyenne.ToString("0.00")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Meilleure matière</h5>
+                <p class="card-text">@Model.MeilleureMatiere ?? "-"</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-danger mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Matière la plus faible</h5>
+                <p class="card-text">@Model.PireMatiere ?? "-"</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-secondary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Nombre de matières</h5>
+                <p class="card-text">@Model.NombreMatieres</p>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Matière</th>
+            <th>Note</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var note in Model.Notes)
+    {
+        <tr>
+            <td>@note.Matiere.Nom</td>
+            <td>@note.Valeur</td>
+            <td>@note.DateAjout.ToShortDateString()</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<a class="btn btn-info" href="@Url.Action("History")">Voir l'historique des modifications</a>
+
+<canvas id="notesChart"></canvas>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('notesChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [@string.Join(",", Model.Notes.Select(n => $"'{n.Matiere.Nom}'"))],
+                datasets: [{
+                    label: 'Notes',
+                    data: [@string.Join(",", Model.Notes.Select(n => n.Valeur))],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            }
+        });
+    </script>
+}

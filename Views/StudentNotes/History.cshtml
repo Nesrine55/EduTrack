@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Note>
+@{
+    ViewData["Title"] = "Historique des modifications de notes";
+}
+<h2>Historique des modifications</h2>
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Aucune modification de note trouvée.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Matière</th>
+                <th>Ancienne note</th>
+                <th>Nouvelle note</th>
+                <th>Date de modification</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var note in Model)
+            {
+                <tr>
+                    <td>@note.Matiere.Nom</td>
+                    <td>@note.AncienneValeur?.ToString("0.00")</td>
+                    <td>@note.Valeur.ToString("0.00")</td>
+                    <td>@note.DateModification?.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<a asp-action="Index" class="btn btn-secondary">Retour à mes notes</a>

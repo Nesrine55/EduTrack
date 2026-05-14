@@ -1,0 +1,36 @@
+﻿@model IEnumerable<Note>
+@{
+    ViewData["Title"] = "Liste des notes";
+}
+<h2>Liste des notes</h2>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Matière</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var note in Model)
+        {
+            <tr>
+                <td>@note.Etudiant.UserName</td>
+                <td>@note.Matiere.Nom</td>
+                <td>@note.Valeur</td>
+                <td>@note.DateAjout.ToShortDateString()</td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="@Url.Action("Edit", new { id = note.Id })">Modifier</a>
+                    <a class="btn btn-sm btn-danger" href="@Url.Action("Delete", new { id = note.Id })">Supprimer</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a class="btn btn-success" href="@Url.Action("Create")">Ajouter une note</a>

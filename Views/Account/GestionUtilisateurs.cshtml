@@ -172,6 +172,18 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-1">
+
+                                            @if (user.RoleActuel == "Enseignant")
+
+                                            {
+                                                <a asp-controller="TeacherAssignments"
+                                                   asp-action="Create"
+                                                   asp-route-teacherId="@user.Id"
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="Affecter classes/groupes">
+                                                    <i class="fas fa-tasks"></i>
+                                                </a>
+                                            }
                                             <a asp-action="ModifierUtilisateur" asp-route-id="@user.Id"
                                                class="btn btn-sm btn-outline-secondary" title="Modifier le profil">
                                                 <i class="fas fa-edit"></i>
