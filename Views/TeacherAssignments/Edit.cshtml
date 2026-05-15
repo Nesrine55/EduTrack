@@ -1,0 +1,129 @@
+﻿```cshtml
+@model PerformanceEtudiante.ViewModels.TeacherAssignmentViewModel
+
+@{
+    ViewData["Title"] = "Modifier Affectation";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-edit text-primary me-2"></i>
+                Modifier Affectation
+            </h2>
+            <p class="text-muted mb-0">
+                Modifier les informations d'affectation de l'enseignant.
+            </p>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Retour
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-action="Edit" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-4">
+
+                    <!-- Enseignant -->
+                    <div class="col-md-6">
+                        <label asp-for="EnseignantId" class="form-label fw-semibold">
+                            Enseignant
+                        </label>
+
+                        <select asp-for="EnseignantId"
+                                asp-items="Model.Enseignants"
+                                class="form-select">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+
+                        <span asp-validation-for="EnseignantId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Classe -->
+                    <div class="col-md-6">
+                        <label asp-for="ClasseId" class="form-label fw-semibold">
+                            Classe
+                        </label>
+
+                        <select asp-for="ClasseId"
+                                asp-items="Model.Classes"
+                                class="form-select">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+
+                        <span asp-validation-for="ClasseId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Groupe -->
+                    <div class="col-md-6">
+                        <label asp-for="GroupeId" class="form-label fw-semibold">
+                            Groupe
+                        </label>
+
+                        <select asp-for="GroupeId"
+                                asp-items="Model.Groupes"
+                                class="form-select">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+
+                        <span asp-validation-for="GroupeId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Matière -->
+                    <div class="col-md-6">
+                        <label asp-for="MatiereId" class="form-label fw-semibold">
+                            Matière
+                        </label>
+
+                        <select asp-for="MatiereId"
+                                asp-items="Model.Matieres"
+                                class="form-select">
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+
+                        <span asp-validation-for="MatiereId" class="text-danger small"></span>
+                    </div>
+
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-light border">
+                        Annuler
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+```

@@ -11,21 +11,21 @@
     @Html.AntiForgeryToken()
     <div class="col-md-4">
         <label asp-for="ClasseId" class="form-label">Classe</label>
-        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes" onchange="this.form.submit()">
+        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes" id="ClasseId">
             <option value="">Sélectionner</option>
         </select>
         <span asp-validation-for="ClasseId" class="text-danger"></span>
     </div>
     <div class="col-md-4">
         <label asp-for="GroupeId" class="form-label">Groupe</label>
-        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes" onchange="this.form.submit()">
+        <select asp-for="GroupeId" class="form-select" id="GroupeId">
             <option value="">Sélectionner</option>
         </select>
         <span asp-validation-for="GroupeId" class="text-danger"></span>
     </div>
     <div class="col-md-4">
         <label asp-for="MatiereId" class="form-label">Matière</label>
-        <select asp-for="MatiereId" class="form-select" asp-items="Model.Matieres" onchange="this.form.submit()">
+        <select asp-for="MatiereId" class="form-select" id="MatiereId">
             <option value="">Sélectionner</option>
         </select>
         <span asp-validation-for="MatiereId" class="text-danger"></span>
@@ -48,4 +48,65 @@
 </form>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const assignments = @Html.Raw(ViewBag.TeacherAssignments ?? "[]");
+
+        const classeSelect = document.getElementById("ClasseId");
+        const groupeSelect = document.getElementById("GroupeId");
+        const matiereSelect = document.getElementById("MatiereId");
+
+        const selectedClasse = "@Model.ClasseId";
+        const selectedGroupe = "@Model.GroupeId";
+        const selectedMatiere = "@Model.MatiereId";
+
+        function setOptions(select, items, selected) {
+            select.innerHTML = '<option value="">Sélectionner</option>';
+            items.forEach(i => {
+                const opt = document.createElement("option");
+                opt.value = i.value;
+                opt.text = i.text;
+                if (selected && selected === i.value) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function uniqueById(items) {
+            const map = new Map();
+            items.forEach(i => map.set(i.value, i));
+            return Array.from(map.values());
+        }
+
+        function populateGroupes() {
+            const classeId = classeSelect.value;
+            const groupes = assignments
+                .filter(a => a.ClasseId.toString() === classeId)
+                .map(a => ({ value: a.GroupeId.toString(), text: a.GroupeNom }));
+            setOptions(groupeSelect, uniqueById(groupes), selectedGroupe);
+            populateMatieres();
+        }
+
+        function populateMatieres() {
+            const classeId = classeSelect.value;
+            const groupeId = groupeSelect.value;
+            const matieres = assignments
+                .filter(a => a.ClasseId.toString() === classeId && a.GroupeId.toString() === groupeId)
+                .map(a => ({ value: a.MatiereId.toString(), text: a.MatiereNom }));
+            setOptions(matiereSelect, uniqueById(matieres), selectedMatiere);
+        }
+
+        classeSelect.addEventListener("change", () => {
+            groupeSelect.value = "";
+            matiereSelect.value = "";
+            populateGroupes();
+        });
+
+        groupeSelect.addEventListener("change", () => {
+            matiereSelect.value = "";
+            populateMatieres();
+        });
+
+        if (classeSelect.value) {
+            populateGroupes();
+        }
+    </script>
 }

@@ -4,7 +4,10 @@
     {
         public int Id { get; set; }
         public string Nom { get; set; } = string.Empty;
-        public ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
-    }
 
+        public int GroupeId { get; set; }
+        public Groupe Groupe { get; set; } = null!;
+
+        public ICollection<ApplicationUser> Etudiants { get; set; } = new List<ApplicationUser>();
+    }
 }

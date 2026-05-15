@@ -1,4 +1,6 @@
-﻿using PerformanceEtudiante.Models;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using PerformanceEtudiante.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace PerformanceEtudiante.ViewModels
@@ -15,10 +17,13 @@ namespace PerformanceEtudiante.ViewModels
         [Range(1, int.MaxValue)]
         public int MatiereId { get; set; }
 
+        public int? GroupeId { get; set; }
+
         [Required]
         public string EtudiantId { get; set; }
 
         public IEnumerable<Matiere> Matieres { get; set; }
         public IEnumerable<ApplicationUser> Etudiants { get; set; }
+        public IEnumerable<SelectListItem>? Groupes { get; set; }
     }
 }

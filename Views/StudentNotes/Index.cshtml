@@ -73,21 +73,26 @@
 </table>
 <a class="btn btn-info" href="@Url.Action("History")">Voir l'historique des modifications</a>
 
-<canvas id="notesChart"></canvas>
+<canvas id="notesChart" style="min-height:300px;"></canvas>
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var ctx = document.getElementById('notesChart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: [@string.Join(",", Model.Notes.Select(n => $"'{n.Matiere.Nom}'"))],
-                datasets: [{
-                    label: 'Notes',
-                    data: [@string.Join(",", Model.Notes.Select(n => n.Valeur))],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                }]
-            }
-        });
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Notes.Select(n => n.Matiere.Nom)));
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Notes.Select(n => n.Valeur)));
+
+        if (labels.length > 0) {
+            const ctx = document.getElementById('notesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Notes',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                    }]
+                }
+            });
+        }
     </script>
 }

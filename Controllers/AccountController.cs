@@ -2,22 +2,28 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using PerformanceEtudiante.Data;
 using PerformanceEtudiante.Models;
 using PerformanceEtudiante.ViewModels;
+
 
 namespace PerformanceEtudiante.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public AccountController(
+            ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
@@ -43,7 +49,20 @@ namespace PerformanceEtudiante.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !user.EstActif) { ModelState.AddModelError(string.Empty, "Email ou mot de passe incorrect."); return View(model); }
             var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.MotDePasse, model.SeRappelerDeMoi, lockoutOnFailure: true);
-            if (result.Succeeded) return RedirectToLocal(returnUrl) ?? RedirectToAction("Index", "Dashboard");
+            //if (result.Succeeded) return RedirectToLocal(returnUrl) ?? RedirectToAction("Index", "Dashboard");
+            if (result.Succeeded)
+            {
+                if (await _userManager.IsInRoleAsync(user, "Administrateur"))
+                {
+                    return RedirectToAction("GestionUtilisateurs", "Account");
+                }
+
+                var localRedirect = RedirectToLocal(returnUrl);
+                if (localRedirect != null)
+                    return localRedirect;
+
+                return RedirectToAction("Index", "Dashboard");
+            }
             if (result.IsLockedOut) { ModelState.AddModelError(string.Empty, "Compte bloqué après plusieurs tentatives. Réessayez dans 15 min."); return View(model); }
             ModelState.AddModelError(string.Empty, "Email ou mot de passe incorrect.");
             return View(model);
@@ -76,15 +95,69 @@ namespace PerformanceEtudiante.Controllers
         // US2 - Créer utilisateur
         [HttpGet]
         [Authorize(Roles = "Administrateur")]
-        public IActionResult CreerUtilisateur() => View(new CreerUtilisateurViewModel());
+        public IActionResult CreerUtilisateur()
+        {
+            var vm = new CreerUtilisateurViewModel
+            {
+                Classes = _context.Classes
+                        .AsNoTracking()
+                        .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom })
+                        .ToList(),
+                                    Groupes = _context.Groupes
+                        .AsNoTracking()
+                        .Include(g => g.Classe)
+                        .Select(g => new SelectListItem { Value = g.Id.ToString(), Text = $"{g.Nom} ({g.Classe.Nom})" })
+                        .ToList()
+            };
+            return View(vm);
+        }
 
         [HttpPost]
         [Authorize(Roles = "Administrateur")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreerUtilisateur(CreerUtilisateurViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-            if (await _userManager.FindByEmailAsync(model.Email) != null) { ModelState.AddModelError("Email", "Cette adresse email est déjà utilisée."); return View(model); }
+            if (model.Role == "Etudiant")
+            {
+                if (!model.ClasseId.HasValue || !model.GroupeId.HasValue)
+                    ModelState.AddModelError("", "Classe et groupe requis.");
+
+                if (model.ClasseId.HasValue && model.GroupeId.HasValue)
+                {
+                    var groupe = await _context.Groupes
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(g => g.Id == model.GroupeId.Value);
+
+                    if (groupe == null || groupe.ClasseId != model.ClasseId.Value)
+                        ModelState.AddModelError("", "Classe et groupe non compatibles.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Classes = _context.Classes
+                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom })
+                    .ToList();
+                model.Groupes = _context.Groupes
+                    .Include(g => g.Classe)
+                    .Select(g => new SelectListItem { Value = g.Id.ToString(), Text = $"{g.Nom} ({g.Classe.Nom})" })
+                    .ToList();
+                return View(model);
+            }
+
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError("Email", "Cette adresse email est déjà utilisée.");
+                model.Classes = _context.Classes
+                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom })
+                    .ToList();
+                model.Groupes = _context.Groupes
+                    .Include(g => g.Classe)
+                    .Select(g => new SelectListItem { Value = g.Id.ToString(), Text = $"{g.Nom} ({g.Classe.Nom})" })
+                    .ToList();
+                return View(model);
+            }
+
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -96,10 +169,25 @@ namespace PerformanceEtudiante.Controllers
                 Role = model.Role switch { "Administrateur" => UserRole.Administrateur, "Enseignant" => UserRole.Enseignant, _ => UserRole.Etudiant },
                 EmailConfirmed = true,
                 EstActif = true,
-                DateInscription = DateTime.Now
+                DateInscription = DateTime.Now,
+                ClasseId = model.Role == "Etudiant" ? model.ClasseId : null,
+                GroupeId = model.Role == "Etudiant" ? model.GroupeId : null
             };
+
             var result = await _userManager.CreateAsync(user, model.MotDePasse);
-            if (!result.Succeeded) { foreach (var e in result.Errors) ModelState.AddModelError(string.Empty, e.Description); return View(model); }
+            if (!result.Succeeded)
+            {
+                foreach (var e in result.Errors) ModelState.AddModelError(string.Empty, e.Description);
+                model.Classes = _context.Classes
+                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom })
+                    .ToList();
+                model.Groupes = _context.Groupes
+                    .Include(g => g.Classe)
+                    .Select(g => new SelectListItem { Value = g.Id.ToString(), Text = $"{g.Nom} ({g.Classe.Nom})" })
+                    .ToList();
+                return View(model);
+            }
+
             if (await _roleManager.RoleExistsAsync(model.Role)) await _userManager.AddToRoleAsync(user, model.Role);
             TempData["Succes"] = $"Utilisateur {user.NomComplet} créé avec le rôle '{model.Role}' avec succès !";
             return RedirectToAction(nameof(GestionUtilisateurs));
@@ -173,20 +261,64 @@ namespace PerformanceEtudiante.Controllers
         }
 
         // US2 - Supprimer
-        [HttpPost]
-        [Authorize(Roles = "Administrateur")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SupprimerUtilisateur(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) { TempData["Erreur"] = "Utilisateur introuvable."; return RedirectToAction(nameof(GestionUtilisateurs)); }
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser?.Id == userId) { TempData["Erreur"] = "Vous ne pouvez pas supprimer votre propre compte."; return RedirectToAction(nameof(GestionUtilisateurs)); }
-            var nom = user.NomComplet;
-            await _userManager.DeleteAsync(user);
-            TempData["Succes"] = $"Utilisateur {nom} supprimé avec succès.";
-            return RedirectToAction(nameof(GestionUtilisateurs));
-        }
+
+    [HttpPost]
+    [Authorize(Roles = "Administrateur")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SupprimerUtilisateur(string userId)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+
+                if (user == null)
+                {
+                    TempData["Erreur"] = "Utilisateur introuvable.";
+                    return RedirectToAction(nameof(GestionUtilisateurs));
+                }
+
+                var currentUser = await _userManager.GetUserAsync(User);
+
+                if (currentUser?.Id == userId)
+                {
+                    TempData["Erreur"] = "Vous ne pouvez pas supprimer votre propre compte.";
+                    return RedirectToAction(nameof(GestionUtilisateurs));
+                }
+
+                var notes = await _context.Notes
+                    .Where(n => n.EtudiantId == userId)
+                    .ToListAsync();
+
+                if (notes.Any())
+                {
+                    _context.Notes.RemoveRange(notes);
+                }
+
+                var assignments = await _context.TeacherAssignments
+                    .Where(a => a.EnseignantId == userId)
+                    .ToListAsync();
+
+                if (assignments.Any())
+                {
+                    _context.TeacherAssignments.RemoveRange(assignments);
+                }
+
+                await _context.SaveChangesAsync();
+
+                var nom = user.NomComplet;
+
+                var result = await _userManager.DeleteAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    TempData["Erreur"] = "Erreur lors de la suppression.";
+                    return RedirectToAction(nameof(GestionUtilisateurs));
+                }
+
+                TempData["Succes"] = $"Utilisateur {nom} supprimé avec succès.";
+
+                return RedirectToAction(nameof(GestionUtilisateurs));
+            }
+
+
 
         [AllowAnonymous]
         public IActionResult AccesRefuse() => View();

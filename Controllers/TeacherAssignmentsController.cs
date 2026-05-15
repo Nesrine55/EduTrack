@@ -25,7 +25,6 @@ public class TeacherAssignmentsController : Controller
         var assignments = _context.TeacherAssignments
             .Include(a => a.Enseignant)
             .Include(a => a.Classe)
-            .Include(a => a.Groupe)
             .Include(a => a.Matiere);
         return View(await assignments.ToListAsync());
     }
@@ -48,16 +47,16 @@ public class TeacherAssignmentsController : Controller
                 Text = e.UserName
             }),
 
-            Classes = _context.Classes.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = c.Nom
-            }),
-
             Groupes = _context.Groupes.Select(g => new SelectListItem
             {
                 Value = g.Id.ToString(),
                 Text = g.Nom
+            }),
+
+            Classes = _context.Classes.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Nom
             }),
 
             Matieres = _context.Matieres.Select(m => new SelectListItem
@@ -78,7 +77,6 @@ public class TeacherAssignmentsController : Controller
             var exists = await _context.TeacherAssignments.AnyAsync(a =>
                 a.EnseignantId == vm.EnseignantId &&
                 a.ClasseId == vm.ClasseId &&
-                a.GroupeId == vm.GroupeId &&
                 a.MatiereId == vm.MatiereId);
 
             if (exists)
@@ -91,7 +89,6 @@ public class TeacherAssignmentsController : Controller
             {
                 EnseignantId = vm.EnseignantId,
                 ClasseId = vm.ClasseId,
-                GroupeId = vm.GroupeId,
                 MatiereId = vm.MatiereId
             };
 
@@ -125,5 +122,86 @@ public class TeacherAssignmentsController : Controller
         return View(vm);
     }
 
-    // Ajoutez Edit/Delete selon le même modèle
+    public async Task<IActionResult> Edit(int id)
+    {
+        var assignment = await _context.TeacherAssignments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (assignment == null) return NotFound();
+
+        var enseignants = await _userManager.GetUsersInRoleAsync("Enseignant");
+
+        var vm = new TeacherAssignmentViewModel
+        {
+            Id = assignment.Id,
+            EnseignantId = assignment.EnseignantId,
+            ClasseId = assignment.ClasseId,
+            MatiereId = assignment.MatiereId,
+            Enseignants = enseignants.Select(e => new SelectListItem { Value = e.Id, Text = e.UserName }),
+            Classes = _context.Classes.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom }),
+            Groupes = _context.Groupes.Select(g => new SelectListItem { Value = g.Id.ToString(), Text = g.Nom }),
+            Matieres = _context.Matieres.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Nom })
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, TeacherAssignmentViewModel vm)
+    {
+        if (id != vm.Id) return NotFound();
+
+        if (ModelState.IsValid)
+        {
+            var assignment = await _context.TeacherAssignments.FindAsync(id);
+            if (assignment == null) return NotFound();
+
+            assignment.EnseignantId = vm.EnseignantId;
+            assignment.ClasseId = vm.ClasseId;
+            assignment.MatiereId = vm.MatiereId;
+
+            _context.Update(assignment);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Affectation modifiée avec succès.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var enseignants = await _userManager.GetUsersInRoleAsync("Enseignant");
+        vm.Enseignants = enseignants.Select(e => new SelectListItem { Value = e.Id, Text = e.UserName });
+        vm.Classes = _context.Classes.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nom });
+        vm.Groupes = _context.Groupes.Select(g => new SelectListItem { Value = g.Id.ToString(), Text = g.Nom });
+        vm.Matieres = _context.Matieres.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Nom });
+
+        return View(vm);
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var assignment = await _context.TeacherAssignments
+            .Include(a => a.Enseignant)
+            .Include(a => a.Classe)
+            .Include(a => a.Matiere)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (assignment == null) return NotFound();
+
+        return View(assignment);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var assignment = await _context.TeacherAssignments.FindAsync(id);
+        if (assignment == null) return NotFound();
+
+        _context.TeacherAssignments.Remove(assignment);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Affectation supprimée avec succès.";
+        return RedirectToAction(nameof(Index));
+    }
 }

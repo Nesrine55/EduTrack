@@ -7,8 +7,15 @@
 <form asp-action="Create" method="post" class="row g-3">
     @Html.AntiForgeryToken()
     <div class="col-md-6">
+        <label asp-for="GroupeId" class="form-label">Groupe</label>
+        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes" id="GroupeId">
+            <option value="">Sélectionner un groupe</option>
+        </select>
+        <span asp-validation-for="GroupeId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
         <label asp-for="EtudiantId" class="form-label">Étudiant</label>
-        <select asp-for="EtudiantId" class="form-select" asp-items="@(new SelectList(Model.Etudiants, "Id", "UserName"))">
+        <select asp-for="EtudiantId" class="form-select" id="EtudiantId">
             <option value="">Sélectionner un étudiant</option>
         </select>
         <span asp-validation-for="EtudiantId" class="text-danger"></span>
@@ -30,6 +37,31 @@
         <a asp-action="Index" class="btn btn-secondary">Annuler</a>
     </div>
 </form>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const groupeSelect = document.getElementById("GroupeId");
+        const etudiantSelect = document.getElementById("EtudiantId");
+
+        async function loadStudents() {
+            const groupeId = groupeSelect.value;
+            etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+
+            if (!groupeId) return;
+
+            const res = await fetch(`/Notes/StudentsByGroupe?groupeId=${groupeId}`);
+            if (!res.ok) return;
+
+            const students = await res.json();
+            students.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.id;
+                opt.textContent = s.name;
+                etudiantSelect.appendChild(opt);
+            });
+        }
+
+        groupeSelect.addEventListener("change", loadStudents);
+    </script>
 }

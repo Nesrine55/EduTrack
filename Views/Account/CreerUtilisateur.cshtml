@@ -69,7 +69,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Rôle -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
@@ -81,11 +80,18 @@
                         <label asp-for="Role" class="form-label fw-semibold"></label>
                         <div class="row g-3 mt-1">
                             @foreach (var role in Model.RolesDisponibles)
+
                             {
-                                var (icon, color, desc) = role switch {
-                                    "Administrateur" => ("user-shield", "danger",  "Accès complet à la gestion de l'application"),
-                                    "Enseignant"     => ("chalkboard-teacher", "success", "Saisie des notes et gestion des ressources"),
-                                    _                => ("user-graduate", "primary", "Consultation des notes et performances")
+
+                                var (icon, color, desc) = role switch
+                                {
+
+                                    "Administrateur" => ("user-shield", "danger", "Accès complet à la gestion de l'application"),
+
+                                    "Enseignant" => ("chalkboard-teacher", "success", "Saisie des notes et gestion des ressources"),
+
+                                    _ => ("user-graduate", "primary", "Consultation des notes et performances")
+
                                 };
                                 <div class="col-md-4">
                                     <div class="form-check role-card border rounded-3 p-3 h-100" style="cursor:pointer;">
@@ -104,6 +110,33 @@
                             }
                         </div>
                         <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Classe et groupe -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="fas fa-sitemap me-2 text-info"></i>Affectation classe / groupe
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="ClasseId" class="form-label fw-semibold"></label>
+                                <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes">
+                                    <option value="">Sélectionner</option>
+                                </select>
+                                <span asp-validation-for="ClasseId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="GroupeId" class="form-label fw-semibold"></label>
+                                <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes">
+                                    <option value="">Sélectionner</option>
+                                </select>
+                                <span asp-validation-for="GroupeId" class="text-danger small"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

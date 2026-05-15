@@ -11,14 +11,14 @@
         <span asp-validation-for="EnseignantId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
-        <label asp-for="ClasseId" class="form-label">Classe</label>
-        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes"></select>
-        <span asp-validation-for="ClasseId" class="text-danger"></span>
+        <label asp-for="GroupeId" class="form-label">Groupe</label>
+        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes" id="GroupeId"></select>
+        <span asp-validation-for="GroupeId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
-        <label asp-for="GroupeId" class="form-label">Groupe</label>
-        <select asp-for="GroupeId" class="form-select" asp-items="Model.Groupes"></select>
-        <span asp-validation-for="GroupeId" class="text-danger"></span>
+        <label asp-for="ClasseId" class="form-label">Classe</label>
+        <select asp-for="ClasseId" class="form-select" asp-items="Model.Classes" id="ClasseId"></select>
+        <span asp-validation-for="ClasseId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label asp-for="MatiereId" class="form-label">Matière</label>

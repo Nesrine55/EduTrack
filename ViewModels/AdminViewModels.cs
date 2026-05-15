@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace PerformanceEtudiante.ViewModels
@@ -31,6 +32,12 @@ namespace PerformanceEtudiante.ViewModels
         [Display(Name = "Rôle")]
         public string Role { get; set; } = "Etudiant";
 
+        [Display(Name = "Classe")]
+        public int? ClasseId { get; set; }
+
+        [Display(Name = "Groupe")]
+        public int? GroupeId { get; set; }
+
         [Required(ErrorMessage = "Le mot de passe est requis")]
         [StringLength(100, MinimumLength = 8, ErrorMessage = "Minimum 8 caractères")]
         [DataType(DataType.Password)]
@@ -44,6 +51,9 @@ namespace PerformanceEtudiante.ViewModels
         public string ConfirmerMotDePasse { get; set; } = string.Empty;
 
         public List<string> RolesDisponibles { get; set; } = new() { "Administrateur", "Enseignant", "Etudiant" };
+
+        public IEnumerable<SelectListItem>? Classes { get; set; }
+        public IEnumerable<SelectListItem>? Groupes { get; set; }
     }
 
     public class DetailUtilisateurViewModel

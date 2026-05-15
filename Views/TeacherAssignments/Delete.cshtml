@@ -1,0 +1,107 @@
+﻿```cshtml
+@model PerformanceEtudiante.Models.TeacherAssignment
+
+@{
+    ViewData["Title"] = "Supprimer Affectation";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h2 class="fw-bold text-danger mb-1">
+                <i class="fas fa-trash-alt me-2"></i>
+                Supprimer Affectation
+            </h2>
+
+            <p class="text-muted mb-0">
+                Confirmation de suppression.
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            Retour
+        </a>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <div class="alert alert-warning d-flex align-items-center">
+
+                <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+
+                <div>
+                    Voulez-vous vraiment supprimer cette affectation ?
+                </div>
+
+            </div>
+
+            <div class="row g-4 mt-2">
+
+                <div class="col-md-6">
+                    <label class="text-muted small">Enseignant</label>
+                    <div class="fw-semibold">
+                        @Model.Enseignant?.NomComplet
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted small">Classe</label>
+                    <div class="fw-semibold">
+                        @Model.Classe?.Nom
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted small">Groupe</label>
+                    <div class="fw-semibold">
+                        @Model.Groupe?.Nom
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="text-muted small">Matière</label>
+                    <div class="fw-semibold">
+                        @Model.Matiere?.Nom
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <form asp-action="Delete" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-light border">
+                        Annuler
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+```

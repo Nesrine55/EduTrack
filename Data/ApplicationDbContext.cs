@@ -41,16 +41,22 @@ namespace PerformanceEtudiante.Data
                 .HasForeignKey(n => n.EnseignantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Classe>()
-               .HasMany(c => c.Groupes)
-               .WithOne(g => g.Classe)
-               .HasForeignKey(g => g.ClasseId)
+            builder.Entity<Groupe>()
+               .HasMany(g => g.Classes)
+               .WithOne(c => c.Groupe)
+               .HasForeignKey(c => c.GroupeId)
                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Groupe>()
-                     .HasMany(g => g.Etudiants)
-                     .WithOne(u => u.Groupe)
-                     .HasForeignKey(u => u.GroupeId)
+            builder.Entity<ApplicationUser>()
+                .HasOne(u => u.Classe)
+                .WithMany()
+                .HasForeignKey(u => u.ClasseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Classe>()
+                     .HasMany(c => c.Etudiants)
+                     .WithOne(u => u.Classe)
+                     .HasForeignKey(u => u.ClasseId)
                      .OnDelete(DeleteBehavior.SetNull);
 
 

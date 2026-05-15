@@ -6,7 +6,7 @@ using PerformanceEtudiante.Data;
 using PerformanceEtudiante.Models;
 using PerformanceEtudiante.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
+using System.Text.Json;
 [Authorize(Roles = "Enseignant")]
 public class NotesController : Controller
 {
@@ -32,13 +32,36 @@ public class NotesController : Controller
     // GET: Notes/Create
     public async Task<IActionResult> Create()
     {
-        var matieres = await _context.Matieres.ToListAsync();
-        var etudiants = await _userManager.GetUsersInRoleAsync("Etudiant");
+        var userId = _userManager.GetUserId(User);
+
+        var assignments = await _context.TeacherAssignments
+            .Where(a => a.EnseignantId == userId)
+            .Include(a => a.Groupe)
+            .ToListAsync();
+
+        var matiereIds = assignments
+            .Select(a => a.MatiereId)
+            .Distinct()
+            .ToList();
+
+        var matieres = await _context.Matieres
+            .Where(m => matiereIds.Contains(m.Id))
+            .ToListAsync();
+
         var vm = new NoteViewModel
         {
             Matieres = matieres,
-            Etudiants = etudiants
+            Etudiants = new List<ApplicationUser>(),
+            Groupes = assignments
+                .Select(a => a.Groupe)
+                .Distinct()
+                .Select(g => new SelectListItem
+                {
+                    Value = g.Id.ToString(),
+                    Text = g.Nom
+                })
         };
+
         return View(vm);
     }
 
@@ -46,23 +69,46 @@ public class NotesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(NoteViewModel vm)
     {
+        var userId = _userManager.GetUserId(User);
+
+        var assignments = await _context.TeacherAssignments
+            .Where(a => a.EnseignantId == userId)
+            .Include(a => a.Groupe)
+            .ToListAsync();
+
+        var isAssigned = assignments.Any(a =>
+            a.GroupeId == vm.GroupeId &&
+            a.MatiereId == vm.MatiereId);
+
+        var student = await _context.Users
+            .Include(u => u.Groupe)
+            .FirstOrDefaultAsync(u => u.Id == vm.EtudiantId);
+
+        var isStudentInGroup = student?.GroupeId == vm.GroupeId;
+
+        if (!isAssigned || !isStudentInGroup)
+        {
+            ModelState.AddModelError("", "Unauthorized assignment");
+        }
+
         if (!ModelState.IsValid)
         {
-            var errors = ModelState
-                .Where(x => x.Value.Errors.Count > 0)
-                .Select(x => new
+            var matiereIds = assignments.Select(a => a.MatiereId).Distinct().ToList();
+
+            vm.Matieres = await _context.Matieres
+                .Where(m => matiereIds.Contains(m.Id))
+                .ToListAsync();
+
+            vm.Etudiants = new List<ApplicationUser>();
+
+            vm.Groupes = assignments
+                .Select(a => a.Groupe)
+                .Distinct()
+                .Select(g => new SelectListItem
                 {
-                    Field = x.Key,
-                    Errors = x.Value.Errors.Select(e => e.ErrorMessage)
+                    Value = g.Id.ToString(),
+                    Text = g.Nom
                 });
-
-            foreach (var e in errors)
-            {
-                Console.WriteLine($"{e.Field}: {string.Join(", ", e.Errors)}");
-            }
-
-            vm.Matieres = await _context.Matieres.ToListAsync();
-            vm.Etudiants = await _userManager.GetUsersInRoleAsync("Etudiant");
 
             return View(vm);
         }
@@ -72,7 +118,7 @@ public class NotesController : Controller
             Valeur = vm.Valeur,
             MatiereId = vm.MatiereId,
             EtudiantId = vm.EtudiantId,
-            EnseignantId = _userManager.GetUserId(User),
+            EnseignantId = userId,
             DateAjout = DateTime.Now
         };
 
@@ -158,6 +204,7 @@ public class NotesController : Controller
     }
 
     // GET: Notes/TeacherEntry
+    // GET: Notes/TeacherEntry
     public async Task<IActionResult> TeacherEntry()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -168,6 +215,16 @@ public class NotesController : Controller
             .Include(a => a.Groupe)
             .Include(a => a.Matiere)
             .ToListAsync();
+
+        ViewBag.TeacherAssignments = JsonSerializer.Serialize(assignments.Select(a => new
+        {
+            a.ClasseId,
+            ClasseNom = a.Classe.Nom,
+            a.GroupeId,
+            GroupeNom = a.Groupe.Nom,
+            a.MatiereId,
+            MatiereNom = a.Matiere.Nom
+        }));
 
         var vm = new GradeEntryViewModel
         {
@@ -185,6 +242,7 @@ public class NotesController : Controller
     }
 
     // POST: Notes/TeacherEntry
+    // POST: Notes/TeacherEntry
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> TeacherEntry(GradeEntryViewModel vm)
@@ -193,7 +251,20 @@ public class NotesController : Controller
 
         var assignments = await _context.TeacherAssignments
             .Where(a => a.EnseignantId == user.Id)
+            .Include(a => a.Classe)
+            .Include(a => a.Groupe)
+            .Include(a => a.Matiere)
             .ToListAsync();
+
+        ViewBag.TeacherAssignments = JsonSerializer.Serialize(assignments.Select(a => new
+        {
+            a.ClasseId,
+            ClasseNom = a.Classe.Nom,
+            a.GroupeId,
+            GroupeNom = a.Groupe.Nom,
+            a.MatiereId,
+            MatiereNom = a.Matiere.Nom
+        }));
 
         vm.Classes = assignments
             .Select(a => a.Classe)
@@ -226,9 +297,9 @@ public class NotesController : Controller
                 Text = m.Nom
             });
 
-        // IMPORTANT FIX HERE
         vm.Students = await _context.Users
-            .Where(u => u.GroupeId == vm.GroupeId)
+            .Include(u => u.Groupe)
+            .Where(u => u.GroupeId == vm.GroupeId && u.Groupe.ClasseId == vm.ClasseId)
             .Select(u => new SelectListItem
             {
                 Value = u.Id,
@@ -243,9 +314,16 @@ public class NotesController : Controller
                 a.GroupeId == vm.GroupeId &&
                 a.MatiereId == vm.MatiereId);
 
-            if (!isAssigned)
+            var student = await _context.Users
+                .Include(u => u.Groupe)
+                .FirstOrDefaultAsync(u => u.Id == vm.StudentId);
+
+            var isStudentInGroup = student?.GroupeId == vm.GroupeId;
+            var isStudentInClass = student?.Groupe?.ClasseId == vm.ClasseId;
+
+            if (!isAssigned || !isStudentInGroup || !isStudentInClass)
             {
-                ModelState.AddModelError("", "Affectation non autorisée.");
+                ModelState.AddModelError("", "Unauthorized assignment");
                 return View(vm);
             }
 
@@ -266,4 +344,24 @@ public class NotesController : Controller
 
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> StudentsByGroupe(int groupeId)
+    {
+        var userId = _userManager.GetUserId(User);
+
+        var allowed = await _context.TeacherAssignments
+            .AnyAsync(a => a.EnseignantId == userId && a.GroupeId == groupeId);
+
+        if (!allowed) return Forbid();
+
+        var students = await _context.Users
+            .Where(u => u.GroupeId == groupeId && u.Role == UserRole.Etudiant)
+            .Select(u => new { id = u.Id, name = u.UserName })
+            .ToListAsync();
+
+        return Json(students);
+    }
+
+
 }
